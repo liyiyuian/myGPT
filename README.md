@@ -12,6 +12,8 @@
                                              _//    _// ~}
 ```
 
+ChatGPT has been incredibly helpful for my work. However, I'm not particularly fond of a fixed fee subscription model. I would much prefer a pay-as-you-go approach. As a result, I've embarked on a project to integrate the OpenAI API for this purpose. So far, it has proven to be significantly more cost-effective than using ChatGPT. Despite this, I must admit that ChatGPT possesses superior communication abilities, likely due to the prompt engineering conducted by OpenAI. Nevertheless, with the abundance of publicly available resources, we have managed to develop some highly capable agents. For now, my focus will be on chat completion and building an assistant.
+
 # Installation
 
 ## Requirements
