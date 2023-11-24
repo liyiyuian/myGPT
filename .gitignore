@@ -1,0 +1,22 @@
+# data
+data/*
+outputs/*
+
+
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg-info
+.Python
+dist/
+build/
+*.egg
+.eggs/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
