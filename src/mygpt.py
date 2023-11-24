@@ -1,20 +1,20 @@
 from openai import OpenAI
 import os
 import cowsay
-
 from assistant import *
 from chat import *
 from args import *
+from utils import *
 # from image import *
 
 
 # greeting words in the begining of the program
 def greeting():
     print(cowsay.get_output_string('fox',
-                                   "Welcome to myGPT! What's in your mind?"))
+                                   "Welcome to mygpt! what's in your mind?"))
 
 
-# get_assistant use OpenAI client to load the assistants created and exist
+# get_assistant use openai client to load the assistants created and exist
 # on the server
 def get_assistant():
     client = OpenAI()
@@ -32,15 +32,15 @@ def get_assistant():
         selection = int(input("> Which assistant do you want to retrieve?" +
                               " select 99 if you want to create a new one.\n" +
                               options +
-                              "\n> Your option: "))
+                              "\n> your option: "))
         return my_assistants.data[selection] if selection != 99 else False
 
     else:
-        print("There is no existing assistant. Let's create one!")
+        print("there is no existing assistant. let's create one!")
         return False
 
 
-# file_not_found return True if on of the file does not exist, otherwise, True
+# file_not_found return true if on of the file does not exist, otherwise, true
 def file_not_found(filepaths):
     for file in filepaths.strip().split():
         if not os.path.exists(file):
@@ -49,7 +49,7 @@ def file_not_found(filepaths):
     return False
 
 
-# clean_filepath clean the format. Naive way, can be improved.
+# clean_filepath clean the format. naive way, can be improved.
 def clean_filepath(filepaths):
     out = []
     for file in filepaths.strip().split():
@@ -62,8 +62,8 @@ def clean_args(name, instructions, filepaths, ofilename, model, tools, des):
     if not name.strip():
         name = "default_name"
     if not instructions.strip():
-        instructions = """You are a helpful assistant. Try to answer the
-        question to you best knowledge. Try to answer it step-by-step and
+        instructions = """You are a helpful assistant. try to answer the
+        question to you best knowledge. try to answer it step-by-step and
         provide a summary in the end."""
 
     if not ofilename.strip():
@@ -93,7 +93,7 @@ def clean_args(name, instructions, filepaths, ofilename, model, tools, des):
             tools.append({"type": tool})
 
     print("\n###################################################")
-    print("> Creating an assistant with the following options")
+    print("> Creating an Assistant with the Following Options")
     print("###################################################")
     print(f"> Name: {name.strip()}")
     print(f"> Instructions: {instructions.strip()}")
@@ -109,21 +109,22 @@ def clean_args(name, instructions, filepaths, ofilename, model, tools, des):
 
 def run_assistant():
     if (assistant := get_assistant()):
-        message = input("> What do you want to ask this assistant to do: ")
+        message = input("> what do you want to ask this assistant to do: ")
         ans_instruct = input("> Answer instruction: ")
-        ofilename = input("> Output Markdown filename: ")
+        ofilename = input("> Output markdown filename: ")
         Assistant(assistant=assistant,
                   message=message,
                   ans_instructions=ans_instruct,
                   ofilename=ofilename)
     else:
         assistant = Assistant()
-        print("> Okay! Let's create a new assistant! Press enter to skip the question.")
+        print("> Okay! Let's create a new assistant! press enter to skip the question.")
         name = input("> Name your assistant (no space): ")
         instructions = input("> Customize instructions: ")
         filepaths = input("> Upload files: ")
-        ofilename = input("> Output Markdown filename: ")
-        model = input("> Model (default: gpt-3.5-turbo-1106, try gpt-4-1106-preview): ")
+        ofilename = input("> Output markdown filename: ")
+        model = input("""
+> Model (default: gpt-3.5-turbo-1106, try gpt-4-1106-preview): """)
         tools = input("> Tools (retrieval and/or code_interpreter): ")
         des = input("> Description: ")
 
@@ -145,7 +146,6 @@ def run_assistant():
 
         messages = []
         for i, data in reversed(list(enumerate(results.data))):
-            # print(i, data.content[0].text.value)
             messages.append(f"{i}: {data.content[0].text.value.strip()}")
         time.sleep(10)
         assistant.output_md(messages)
@@ -155,9 +155,9 @@ def run_assistant():
         if delete_files:
             print("> Deleting files...")
             assistant.del_file()
-        delete_assistant = input("> Do you want to remove this assistant (y/n)?")
-        delete_assistant = True if delete_assistant == 'y' else False
-        if delete_assistant:
+        del_assistant = input("> Do you want to remove this assistant (y/n)?")
+        del_assistant = True if del_assistant == 'y' else False
+        if del_assistant:
             assistant.del_assistant()
     os.system(f'mdcat {ofilename}')
     print(f"> Output is written to {ofilename}")
@@ -170,18 +170,15 @@ def main():
         user_query()
     elif args.mode[0] == 'assistant':
         run_assistant()
-        # TODO: check mkcat installation
+        # todo: check mkcat installation
 
     elif args.mode[0] == 'image':
         pass
-        # run_image()
+    else:
+        print("> Entering Other Modes...")
+        if args.delete_all:
+            delete_all()
 
 
 if __name__ == '__main__':
     main()
-
-
-    # TODO: need to check if files still exist for the agent.
-    # model should check the existing thread, and see if that can be resued 
-    # and consinute the conversation. If yes, then chat with pdf wont be hard.
-    # shoud list the files in that assistant

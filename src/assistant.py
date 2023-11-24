@@ -1,12 +1,13 @@
 from os import wait
 import openai
 import time
-
 from openai.types.beta import assistant
 
 
 # create a class for assistant
 class Assistant:
+    # if a running assistant is provided, initialize the run with it
+    # otherwise, create an empty Assistant object for init_assistant
     def __init__(self,
                  assistant=None,
                  message=None,
@@ -22,7 +23,9 @@ class Assistant:
             self.create_thread()
             self.add_message(message=message)
             self.runjob = self.run(assistant_id=assistant.id)
-            print(f"> Assistant {assistant.name} loaded and start running your request!")
+            print(f"""
+> Assistant {assistant.name} loaded and start running your request!
+                  """)
             result = self.check_status()
             output = []
             for i, data in reversed(list(enumerate(result.data))):
@@ -30,6 +33,7 @@ class Assistant:
                 output.append(f"{i}: {data.content[0].text.value.strip()}")
             self.output_md(output)
 
+    # init_assistant initialize a new assistant
     def init_assistant(self, name, instructions, description, filepaths=None,
                        model="gpt-3.5-turbo-1106",
                        tools=[{"type": "retrieval"}],
@@ -47,7 +51,7 @@ class Assistant:
         self.assistant = self.create_assistant()
         self.create_thread()
 
-
+    # create_file upload the provided file to openai and get a file object
     def create_file(self):
         files = []
         for file in self.filepaths:
@@ -55,6 +59,7 @@ class Assistant:
                                                   purpose='assistants'))
         self.files = files
 
+    # create_assistant takes created files (optional) and create an assistant
     def create_assistant(self):
         # create file object #TODO: do i need to change rb based on filetype?
 
@@ -83,58 +88,49 @@ class Assistant:
 
     # Add a Message to a Thread
     def add_message(self, message):
-        return self.client.beta.threads.messages.create(thread_id=self.thread.id,
-                                                        role="user",
-                                                        content=message
-                                                        )
+        return self.client.beta.threads.messages.create(
+                thread_id=self.thread.id,
+                role="user",
+                content=message
+                )
 
-    # Run the Assistant
+    # Run the job with specified assistant, thread and instruction for answer
     def run(self, assistant_id):
-        """
-        By default, a Run will use the model and tools configuration specified in
-        Assistant object, but you can override most of these when creating the Run
-        for added flexibility:
+        return self.client.beta.threads.runs.create(
+                thread_id=self.thread.id,
+                assistant_id=assistant_id,
+                instructions=self.ans_instructions
+                )
 
-        run = client.beta.threads.runs.create(
-          thread_id=thread.id,
-          assistant_id=assistant.id,
-          model="gpt-4-1106-preview",
-          instructions="additional instructions",
-          tools=[{"type": "code_interpreter"}, {"type": "retrieval"}]
-        )
-
-        Note: file_ids associated with the Assistant cannot be overridden
-        during Run creation. You must use the modify Assistant endpoint to do this.
-        """
-        return self.client.beta.threads.runs.create(thread_id=self.thread.id,
-                                                    assistant_id=assistant_id,
-                                                    instructions=self.ans_instructions
-                                                    )
-
-    # If run is 'completed', get messages and print
+    # check_status checks if run is 'completed', get messages return
     def check_status(self):
         while True:
             # Retrieve the run statusrun_status
-            run_status = self.client.beta.threads.runs.retrieve(thread_id=self.thread.id,
-                                                                run_id=self.runjob.id)
+            run_status = self.client.beta.threads.runs.retrieve(
+                    thread_id=self.thread.id,
+                    run_id=self.runjob.id)
             time.sleep(10)
             if run_status.status == 'completed':
-                messages = self.client.beta.threads.messages.list(thread_id=self.thread.id)
+                messages = self.client.beta.threads.messages.list(
+                        thread_id=self.thread.id)
                 break
             else:
                 # sleep again
                 time.sleep(2)
         return messages
 
+    # del_assistant delete the current running assistant
     def del_assistant(self):
         response = self.client.beta.assistants.delete(self.assistant.id)
         print(response)
 
+    # del_file delete all files uploaded with the current assistant
     def del_file(self):
         for file in self.fileid:
             response = self.client.files.delete(file)
             print(response)
 
+    # output_md write a markdown for assistant's answers
     def output_md(self, message):
         with open(self.ofilename, 'w') as file:
             for line in message:

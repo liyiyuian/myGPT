@@ -39,5 +39,3 @@ def user_query():
         prompt = input("You > ")
         # TODO: add exit option; 
         process_user_query(prompt)
-
-
